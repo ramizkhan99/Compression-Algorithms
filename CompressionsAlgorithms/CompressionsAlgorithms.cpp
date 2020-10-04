@@ -1,5 +1,5 @@
 // Macros for current folder
-#ifndef WINDOWS
+#ifdef _WIN32
 #include <direct.h>
 #define GetCWD _getcwd
 #else
@@ -7,17 +7,20 @@
 #define GetCWD getcwd
 #endif
 
+
 #include <iostream>
 #include <vector>
-#include <fstream>
+#include <filesystem>
 
 #include "TypeHandler.h"
+
+namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
 	if ( argc == 1 )
 	{
-		std::cout << "Invalid arguments\nPlease specify a path";
+		std::cout << "Invalid arguments\nPlease specify a path or filename";
 		exit(1);
 	}
 
@@ -27,10 +30,14 @@ int main(int argc, char* argv[])
 		exit(0);
 	}
 
-	char cwd[FILENAME_MAX];
-	GetCWD(cwd, FILENAME_MAX);
-	std::string current_working_dir(cwd);
-	std::string filename(argv[2]);
+	const fs::path filepath = fs::current_path() / argv[1];
 
-	TypeHandler typeHandler(current_working_dir, filename);
+	if ( !fs::exists(filepath) )
+	{
+		std::cout << "This file does not exist\nPlease try again" << std::endl;
+		exit(1);
+	}
+
+	TypeHandler typeHandler(filepath);
+	typeHandler.ShowInfo();
 }
